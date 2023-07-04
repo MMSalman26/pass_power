@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1"
+    />
+    <script>
+      addEventListener("load", function () {
+        var viewport = document.querySelector("meta[name=viewport]");
+        viewport.setAttribute(
+          "content",
+          viewport.content + ", height=" + window.innerHeight
+        );
+      });
+    </script>
+
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="parent">
+      <div class="container">
+        <div class="indicator" id="indicator"></div>
+        <div class="topp">
+          <input class="num" name="number" id="num" />
+          <button class="btn btn1" id="sub" type="submit">Power On</button>
+        </div>
+        <div class="devices">
+          <h3>Light 1</h3>
+          <label class="switch">
+            <input id="light1" type="checkbox" />
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="devices">
+          <h3>Fan 1</h3>
+          <label class="switch sw1">
+            <input id="fan1" type="checkbox" />
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="devices">
+          <h3>Light 2</h3>
+          <label class="switch">
+            <input id="light2" type="checkbox" />
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div>
+          <input class="num" name="number2" id="num2" />
+          <button class="btn btn2" id="sub2" type="submit">Power Off</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.12.1/firebase-app.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDzQbVuv6BrlVh2INfLluaM0TDLkR_dHIw",
+        authDomain: "nodemcu35354.firebaseapp.com",
+        databaseURL: "https://nodemcu35354-default-rtdb.firebaseio.com",
+        projectId: "nodemcu35354",
+        storageBucket: "nodemcu35354.appspot.com",
+        messagingSenderId: "219030995264",
+        appId: "1:219030995264:web:97b4afa1d7b5f14bd97aa5",
+      };
+
+      const app = initializeApp(firebaseConfig);
+
+      import {
+        getDatabase,
+        ref,
+        set,
+        get,
+        child,
+        update,
+        remove,
+      } from "https://www.gstatic.com/firebasejs/9.12.1/firebase-database.js";
+
+      const db = getDatabase();
+      const dbref = ref(db);
+
+      let sub = document.getElementById("sub");
+      let sub2 = document.getElementById("sub2");
+      let num = document.getElementById("num");
+      let light1 = document.getElementById("light1");
+      let fan1 = document.getElementById("fan1");
+      let light2 = document.getElementById("light2");
+      let indicator = document.getElementById("indicator");
+
+      let pass = "";
+      let pass2 = "";
+      let state = "";
+      let state1 = "";
+      let state2 = "";
+      let number = "";
+
+      get(child(dbref, "/"))
+        .then((snapshot) => {
+          (pass = snapshot.val().passwordOn),
+            (pass2 = snapshot.val().passwordOff),
+            (number = snapshot.val().number),
+            (state = snapshot.val().state),
+            (state1 = snapshot.val().state1),
+            (state2 = snapshot.val().state2);
+        })
+        .catch((error) => {
+          alert("unsuccessfull  " + error);
+        });
+
+      function exet() {
+        if (state == "31") {
+          light1.checked = true;
+        } else {
+          light1.checked = false;
+        }
+        if (state1 == "41") {
+          light2.checked = true;
+        } else {
+          light2.checked = false;
+        }
+        if (state2 == "51") {
+          fan1.checked = true;
+        } else {
+          fan1.checked = false;
+        }
+      }
+
+      function powerState() {
+        if (num.value === "ch") {
+          sub.innerText = "Check Status";
+          sub.style.width = "105px";
+        } else {
+          sub.innerText = "Power On";
+          sub.style.width = "90px";
+        }
+      }
+
+      function powerOnnn() {
+        if (num.value !== pass && num.value !== "ch") {
+          update(ref(db, "/"), {
+            number: "111",
+          })
+            .then(() => {
+              // alert("stored successfully");
+            })
+            .catch((error) => {
+              alert("unsuccessfull  " + error);
+            });
+          alert("Wrong Password!!!");
+        } else if (num.value === "ch") {
+          indicator.style.opacity = "1";
+          if (number !== "11") {
+            indicator.classList.add("off");
+          } else {
+            indicator.classList.remove("off");
+          }
+          exet();
+          sub.innerText = "Power On";
+          sub.style.width = "90px";
+        }
+        if (num.value === pass) {
+          indicator.style.opacity = "1";
+          indicator.classList.remove("off");
+        }
+        if (num.value !== "ch") {
+          update(ref(db, "/"), {
+            number: num.value === pass ? "11" : "00",
+          })
+            .then(() => {
+              // alert("stored successfully");
+            })
+            .catch((error) => {
+              alert("unsuccessfull  " + error);
+            });
+        }
+        num.value = "";
+      }
+
+      function powerOfff() {
+        if (num2.value === pass2) {
+          indicator.style.opacity = "1";
+          indicator.classList.add("off");
+        }
+        update(ref(db, "/"), {
+          number: num2.value === pass2 ? "21" : "00",
+        })
+          .then(() => {
+            // alert("stored successfully");
+          })
+          .catch((error) => {
+            alert("unsuccessfull  " + error);
+          });
+        num2.value = "";
+      }
+
+      function light111() {
+        if (light1.checked == true) {
+          update(ref(db, "/"), {
+            state: "31",
+          })
+            .then(() => {
+              // alert("stored successfully");
+            })
+            .catch((error) => {
+              alert("unsuccessfull  " + error);
+            });
+        } else {
+          update(ref(db, "/"), {
+            state: "32",
+          })
+            .then(() => {
+              // alert("stored successfully");
+            })
+            .catch((error) => {
+              alert("unsuccessfull  " + error);
+            });
+        }
+      }
+      function light222() {
+        if (light2.checked == true) {
+          update(ref(db, "/"), {
+            state1: "41",
+          })
+            .then(() => {
+              // alert("stored successfully");
+            })
+            .catch((error) => {
+              alert("unsuccessfull  " + error);
+            });
+        } else {
+          update(ref(db, "/"), {
+            state1: "42",
+          })
+            .then(() => {
+              // alert("stored successfully");
+            })
+            .catch((error) => {
+              alert("unsuccessfull  " + error);
+            });
+        }
+      }
+      function fan111() {
+        if (fan1.checked == true) {
+          update(ref(db, "/"), {
+            state2: "51",
+          })
+            .then(() => {
+              // alert("stored successfully");
+            })
+            .catch((error) => {
+              alert("unsuccessfull  " + error);
+            });
+        } else {
+          update(ref(db, "/"), {
+            state2: "52",
+          })
+            .then(() => {
+              // alert("stored successfully");
+            })
+            .catch((error) => {
+              alert("unsuccessfull  " + error);
+            });
+        }
+      }
+
+      sub.addEventListener("click", powerOnnn);
+      num.addEventListener("input", powerState);
+      sub2.addEventListener("click", powerOfff);
+      light1.addEventListener("click", light111);
+      light2.addEventListener("click", light222);
+      fan1.addEventListener("click", fan111);
+    </script>
+  </body>
+</html>
